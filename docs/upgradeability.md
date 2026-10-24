@@ -9,7 +9,7 @@
 
 ## CI versus installable builds
 
-CI runs unit tests, formatting checks and `assembleGithubDebug` to verify compilation. That debug variant has the `.debug` application ID suffix and is not an upgrade package for the normal production app. CI does not publish it as a release artifact. Distributed `github` APKs must be built with the persistent legacy keystore used for previous GitHub releases.
+CI runs unit tests, formatting checks and `assembleGithubDebug` to verify compilation. That debug variant has the `.debug` application ID suffix and is not an upgrade package for the normal production app. CI does not publish it as a release artifact. Distributed `github` APKs must be built with the persistent legacy keystore used for previous GitHub releases. Release assemble/bundle tasks now fail early if `signing/legacy.properties` or its keystore credentials are missing, rather than allowing an accidental unsigned or replacement-key release.
 
 ## Compatibility limit
 
