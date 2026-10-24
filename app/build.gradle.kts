@@ -295,3 +295,37 @@ tasks.matching {
     dependsOn("validateLegacyReleaseSigning")
 }
 
+tasks.register("validateStoreReleaseSigning") {
+    group = "verification"
+    description = "Fail closed if the persistent store/Amazon signing keystore is missing."
+    doLast {
+        val releaseProps = loadProperties("signing/release.properties")
+        val configuredPath = releaseProps.getProperty("storeFile")
+        val configuredAlias = releaseProps.getProperty("keyAlias")
+        val keystore = configuredPath?.let { project.file(it) }
+        check(keystore != null && keystore.isFile) {
+            "Missing signing/release.properties storeFile. Restore the persistent release keystore used for this distribution channel."
+        }
+        check(!configuredAlias.isNullOrBlank()) {
+            "Missing keyAlias in signing/release.properties."
+        }
+        check(!releaseProps.getProperty("storePassword").isNullOrBlank()) {
+            "Missing storePassword in signing/release.properties."
+        }
+        check(!releaseProps.getProperty("keyPassword").isNullOrBlank()) {
+            "Missing keyPassword in signing/release.properties."
+        }
+    }
+}
+
+tasks.matching {
+    it.name == "assembleGoogleplayRelease" ||
+        it.name == "assembleGoogleplaybetaRelease" ||
+        it.name == "assembleAmazonRelease" ||
+        it.name == "bundleGoogleplayRelease" ||
+        it.name == "bundleGoogleplaybetaRelease" ||
+        it.name == "bundleAmazonRelease"
+}.configureEach {
+    dependsOn("validateStoreReleaseSigning")
+}
+
