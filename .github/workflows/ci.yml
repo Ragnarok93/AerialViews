@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   ci:
-    name: Test and build (non-distributable CI build)
+    name: Test and build debug APK
     runs-on: ubuntu-latest
 
     steps:
@@ -51,8 +51,13 @@ jobs:
       - name: Check formatting
         run: ./gradlew --no-daemon spotlessCheck
 
-      - name: Build debug APK for compile verification
+      - name: Build debug APK
         run: ./gradlew --no-daemon assembleGithubDebug
 
-      # CI debug APKs are compile checks, not upgrade/install artifacts. Release APKs
-      # must be signed with the same persistent keystore used by prior distributed builds.
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: debug-apk
+          path: app/build/outputs/apk/github/debug/app-github-debug.apk
+          if-no-files-found: error
+          retention-days: 14
