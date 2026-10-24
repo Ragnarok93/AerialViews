@@ -157,6 +157,14 @@
         </service>
 
 
+        <!-- Read-only wallpaper catalogue for the tv-vibehack-firetv launcher. -->
+        <provider
+            android:name=".services.launcher.LauncherWallpaperProvider"
+            android:authorities="com.neilturner.aerialviews.launcher.wallpapers"
+            android:exported="true"
+            android:grantUriPermissions="false"
+            tools:ignore="ExportedContentProvider" />
+
         <!-- Firebase Analytics and Crashlytics options -->
         <meta-data
             android:name="google_analytics_default_allow_analytics_storage"
