@@ -99,7 +99,7 @@ class LauncherWallpaperProvider : ContentProvider() {
         if (source.scheme != "file") return source.toString()
         val token = UUID.randomUUID().toString()
         localMedia[token] = source
-        val extension = source.path?.substringAfterLast(".", "")?.lowercase().orEmpty()
+        val extension = source.path?.let { File(it).extension.lowercase() }.orEmpty()
         val tokenPath = if (extension.isEmpty()) token else "$token.$extension"
         return Uri.Builder().scheme("content").authority(AUTHORITY).appendPath("local").appendPath(tokenPath).build().toString()
     }
