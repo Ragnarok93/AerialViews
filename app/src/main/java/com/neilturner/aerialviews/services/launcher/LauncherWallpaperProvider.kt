@@ -22,11 +22,11 @@ import com.neilturner.aerialviews.providers.Comm2MediaProvider
 import com.neilturner.aerialviews.providers.LocalMediaProvider
 import com.neilturner.aerialviews.providers.MediaProvider
 import com.neilturner.aerialviews.providers.ProviderFetchResult
-import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 /**
@@ -112,7 +112,8 @@ class LauncherWallpaperProvider : ContentProvider() {
         }
     }
 
-    override fun insert(uri: Uri, values: ContentValues?): Uri? = throw UnsupportedOperationException("Read-only provider")
+    override fun insert(uri: Uri, values: ContentValues?): Uri? =
+        throw UnsupportedOperationException("Read-only provider")
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int =
         throw UnsupportedOperationException("Read-only provider")
@@ -122,7 +123,8 @@ class LauncherWallpaperProvider : ContentProvider() {
         values: ContentValues?,
         selection: String?,
         selectionArgs: Array<out String>?,
-    ): Int = throw UnsupportedOperationException("Read-only provider")
+    ): Int =
+        throw UnsupportedOperationException("Read-only provider")
 
     private fun getEnabledProviders(): List<MediaProvider> =
         listOf(
