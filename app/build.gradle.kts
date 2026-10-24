@@ -263,3 +263,35 @@ fun loadProperties(fileName: String): Properties {
         }
     }
 }
+tasks.register("validateLegacyReleaseSigning") {
+    group = "verification"
+    description = "Fail closed if the persistent legacy signing keystore for GitHub/beta releases is missing."
+    doLast {
+        val legacyProps = loadProperties("signing/legacy.properties")
+        val configuredPath = legacyProps.getProperty("storeFile")
+        val configuredAlias = legacyProps.getProperty("keyAlias")
+        val keystore = configuredPath?.let { project.file(it) }
+        check(keystore != null && keystore.isFile) {
+            "Missing signing/legacy.properties storeFile. Restore the same legacy keystore used for prior GitHub/beta APKs; do not generate a replacement for an existing install."
+        }
+        check(!configuredAlias.isNullOrBlank()) {
+            "Missing keyAlias in signing/legacy.properties."
+        }
+        check(!legacyProps.getProperty("storePassword").isNullOrBlank()) {
+            "Missing storePassword in signing/legacy.properties."
+        }
+        check(!legacyProps.getProperty("keyPassword").isNullOrBlank()) {
+            "Missing keyPassword in signing/legacy.properties."
+        }
+    }
+}
+
+tasks.matching {
+    it.name == "assembleGithubRelease" ||
+        it.name == "assembleBetaRelease" ||
+        it.name == "bundleGithubRelease" ||
+        it.name == "bundleBetaRelease"
+}.configureEach {
+    dependsOn("validateLegacyReleaseSigning")
+}
+
