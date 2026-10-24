@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Binder
 import android.os.ParcelFileDescriptor
 import android.provider.BaseColumns
+import android.webkit.MimeTypeMap
 import com.neilturner.aerialviews.models.enums.AerialMediaType
 import com.neilturner.aerialviews.models.prefs.ProjectivyAmazonPrefs
 import com.neilturner.aerialviews.models.prefs.ProjectivyApplePrefs
@@ -80,12 +81,16 @@ class LauncherWallpaperProvider : ContentProvider() {
         return cursor
     }
 
-    override fun getType(uri: Uri): String = "vnd.android.cursor.dir/vnd.com.neilturner.aerialviews.launcher-wallpaper"
+    override fun getType(uri: Uri): String {
+        val extension = uri.lastPathSegment?.substringAfterLast(".", "")?.lowercase()
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.orEmpty())
+            ?: "vnd.android.cursor.dir/vnd.com.neilturner.aerialviews.launcher-wallpaper"
+    }
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
         enforceLauncherCaller()
         if (mode != "r") throw FileNotFoundException("AerialViews media is read-only")
-        val token = uri.lastPathSegment ?: throw FileNotFoundException("Missing local media token")
+        val token = uri.lastPathSegment?.substringBefore(".") ?: throw FileNotFoundException("Missing local media token")
         val source = localMedia[token] ?: throw FileNotFoundException("Local media item expired")
         val path = source.path ?: throw FileNotFoundException("Local media path unavailable")
         return ParcelFileDescriptor.open(File(path), ParcelFileDescriptor.MODE_READ_ONLY)
@@ -95,7 +100,9 @@ class LauncherWallpaperProvider : ContentProvider() {
         if (source.scheme != "file") return source.toString()
         val token = UUID.randomUUID().toString()
         localMedia[token] = source
-        return Uri.Builder().scheme("content").authority(AUTHORITY).appendPath("local").appendPath(token).build().toString()
+        val extension = source.path?.substringAfterLast(".", "")?.lowercase().orEmpty()
+        val tokenPath = if (extension.isEmpty()) token else "$token.$extension"
+        return Uri.Builder().scheme("content").authority(AUTHORITY).appendPath("local").appendPath(tokenPath).build().toString()
     }
 
     private fun enforceLauncherCaller() {
