@@ -22,12 +22,12 @@ import com.neilturner.aerialviews.providers.Comm2MediaProvider
 import com.neilturner.aerialviews.providers.LocalMediaProvider
 import com.neilturner.aerialviews.providers.MediaProvider
 import com.neilturner.aerialviews.providers.ProviderFetchResult
+import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 
 /**
  * Read-only media catalogue consumed by tv-vibehack-firetv.
@@ -86,10 +86,15 @@ class LauncherWallpaperProvider : ContentProvider() {
             ?: "vnd.android.cursor.dir/vnd.com.neilturner.aerialviews.launcher-wallpaper"
     }
 
-    override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
+    override fun openFile(
+        uri: Uri,
+        mode: String,
+    ): ParcelFileDescriptor {
         enforceLauncherCaller()
         if (mode != "r") throw FileNotFoundException("AerialViews media is read-only")
-        val token = uri.lastPathSegment?.substringBefore(".") ?: throw FileNotFoundException("Missing local media token")
+        val token =
+            uri.lastPathSegment?.substringBefore(".")
+                ?: throw FileNotFoundException("Missing local media token")
         val source = localMedia[token] ?: throw FileNotFoundException("Local media item expired")
         val path = source.path ?: throw FileNotFoundException("Local media path unavailable")
         return ParcelFileDescriptor.open(File(path), ParcelFileDescriptor.MODE_READ_ONLY)
@@ -101,7 +106,14 @@ class LauncherWallpaperProvider : ContentProvider() {
         localMedia[token] = source
         val extension = source.path?.let { File(it).extension.lowercase() }.orEmpty()
         val tokenPath = if (extension.isEmpty()) token else "$token.$extension"
-        return Uri.Builder().scheme("content").authority(AUTHORITY).appendPath("local").appendPath(tokenPath).build().toString()
+        return Uri
+            .Builder()
+            .scheme("content")
+            .authority(AUTHORITY)
+            .appendPath("local")
+            .appendPath(tokenPath)
+            .build()
+            .toString()
     }
 
     private fun enforceLauncherCaller() {
