@@ -45,8 +45,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run unit tests
-        run: ./gradlew --no-daemon testGithubReleaseUnitTest
+      - name: Run debug-variant unit tests
+        run: ./gradlew --no-daemon testGithubDebugUnitTest
 
       - name: Check formatting
         run: ./gradlew --no-daemon spotlessCheck
