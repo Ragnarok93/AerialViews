@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
 import android.os.Binder
+import android.os.ParcelFileDescriptor
 import android.provider.BaseColumns
 import com.neilturner.aerialviews.models.enums.AerialMediaType
 import com.neilturner.aerialviews.models.prefs.ProjectivyAmazonPrefs
@@ -22,6 +23,10 @@ import com.neilturner.aerialviews.providers.LocalMediaProvider
 import com.neilturner.aerialviews.providers.MediaProvider
 import com.neilturner.aerialviews.providers.ProviderFetchResult
 import kotlinx.coroutines.runBlocking
+import java.io.File
+import java.io.FileNotFoundException
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import timber.log.Timber
 
 /**
@@ -31,6 +36,8 @@ import timber.log.Timber
  * Playback and media access remain owned by AerialViews' existing providers.
  */
 class LauncherWallpaperProvider : ContentProvider() {
+    private val localMedia = ConcurrentHashMap<String, Uri>()
+
     override fun onCreate(): Boolean = true
 
     override fun query(
@@ -40,14 +47,10 @@ class LauncherWallpaperProvider : ContentProvider() {
         selectionArgs: Array<out String>?,
         sortOrder: String?,
     ): Cursor {
-        val callingPackages = context?.packageManager?.getPackagesForUid(Binder.getCallingUid()).orEmpty()
-        if (Binder.getCallingUid() != android.os.Process.myUid() &&
-            callingPackages.none { it == LAUNCHER_PACKAGE }
-        ) {
-            throw SecurityException("Only tv-vibehack-firetv may query AerialViews launcher media")
-        }
+        enforceLauncherCaller()
 
         val cursor = MatrixCursor(arrayOf(BaseColumns._ID, COLUMN_URI, COLUMN_TYPE, COLUMN_TITLE))
+        localMedia.clear()
         val enabledProviders = getEnabledProviders()
         val media =
             runBlocking {
@@ -68,7 +71,7 @@ class LauncherWallpaperProvider : ContentProvider() {
             cursor.addRow(
                 arrayOf(
                     index,
-                    item.uri.toString(),
+                    playbackUri(item.uri),
                     if (item.type == AerialMediaType.VIDEO) TYPE_VIDEO else TYPE_IMAGE,
                     item.metadata.shortDescription,
                 ),
@@ -78,6 +81,30 @@ class LauncherWallpaperProvider : ContentProvider() {
     }
 
     override fun getType(uri: Uri): String = "vnd.android.cursor.dir/vnd.com.neilturner.aerialviews.launcher-wallpaper"
+
+    override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
+        enforceLauncherCaller()
+        if (mode != "r") throw FileNotFoundException("AerialViews media is read-only")
+        val token = uri.lastPathSegment ?: throw FileNotFoundException("Missing local media token")
+        val source = localMedia[token] ?: throw FileNotFoundException("Local media item expired")
+        val path = source.path ?: throw FileNotFoundException("Local media path unavailable")
+        return ParcelFileDescriptor.open(File(path), ParcelFileDescriptor.MODE_READ_ONLY)
+    }
+
+    private fun playbackUri(source: Uri): String {
+        if (source.scheme != "file") return source.toString()
+        val token = UUID.randomUUID().toString()
+        localMedia[token] = source
+        return Uri.Builder().scheme("content").authority(AUTHORITY).appendPath("local").appendPath(token).build().toString()
+    }
+
+    private fun enforceLauncherCaller() {
+        val uid = Binder.getCallingUid()
+        val packages = context?.packageManager?.getPackagesForUid(uid).orEmpty()
+        if (uid != android.os.Process.myUid() && packages.none { it == LAUNCHER_PACKAGE }) {
+            throw SecurityException("Only tv-vibehack-firetv may access AerialViews launcher media")
+        }
+    }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? = throw UnsupportedOperationException("Read-only provider")
 
