@@ -776,3 +776,9 @@ Aerial Views is primarily developed by Neil Turner. It is based on [Aerial Dream
 Aerial Views started in early 2020 as a fork with a couple of fixes and features to improve the experience on an old Sony Android TV. Around this time, Aerial Dream was not in active development anymore.
 
 Shortly after putting the code on GitHub, others found the fork and started requesting new builds with fixes and additional features. This led to the eventual release of Aerial Views on the Google Play Store in 2022, and later, the Amazon Appstore.
+
+## tv-vibehack-firetv integration
+
+The Ragnarok93 fork includes an optional read-only media catalogue for the [tv-vibehack-firetv launcher](https://github.com/Ragnarok93/tv-vibehack-firetv). When that launcher is installed, it can query AerialViews' configured media providers and play returned video URIs behind its home-screen UI. The catalogue is restricted to the launcher package. AerialViews remains a standalone app and retains its existing full-screen screensaver entry point.
+
+Install both APKs to enable the launcher background. Configure media sources in AerialViews as usual. This integration currently renders video items in the launcher; image rows and runtime device verification remain outstanding.
