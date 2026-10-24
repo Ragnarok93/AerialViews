@@ -10,12 +10,11 @@ import android.os.ParcelFileDescriptor
 import android.provider.BaseColumns
 import android.webkit.MimeTypeMap
 import com.neilturner.aerialviews.models.enums.AerialMediaType
-import com.neilturner.aerialviews.models.prefs.ProjectivyAmazonPrefs
-import com.neilturner.aerialviews.models.prefs.ProjectivyApplePrefs
-import com.neilturner.aerialviews.models.prefs.ProjectivyComm1Prefs
-import com.neilturner.aerialviews.models.prefs.ProjectivyComm2Prefs
-import com.neilturner.aerialviews.models.prefs.ProjectivyLocalMediaPrefs
-import com.neilturner.aerialviews.models.prefs.ProjectivyPrefs
+import com.neilturner.aerialviews.models.prefs.AmazonVideoPrefs
+import com.neilturner.aerialviews.models.prefs.AppleVideoPrefs
+import com.neilturner.aerialviews.models.prefs.Comm1VideoPrefs
+import com.neilturner.aerialviews.models.prefs.Comm2VideoPrefs
+import com.neilturner.aerialviews.models.prefs.LocalMediaPrefs
 import com.neilturner.aerialviews.providers.AmazonMediaProvider
 import com.neilturner.aerialviews.providers.AppleMediaProvider
 import com.neilturner.aerialviews.providers.Comm1MediaProvider
@@ -66,7 +65,7 @@ class LauncherWallpaperProvider : ContentProvider() {
                         emptyList()
                     }
                 }
-            }.let { items -> if (ProjectivyPrefs.shuffleVideos) items.shuffled() else items }
+            }.let { items -> items.shuffled() }
 
         media.forEachIndexed { index, item ->
             cursor.addRow(
@@ -127,11 +126,11 @@ class LauncherWallpaperProvider : ContentProvider() {
 
     private fun getEnabledProviders(): List<MediaProvider> =
         listOf(
-            AppleMediaProvider(requireNotNull(context).applicationContext, ProjectivyApplePrefs),
-            Comm1MediaProvider(requireNotNull(context).applicationContext, ProjectivyComm1Prefs),
-            Comm2MediaProvider(requireNotNull(context).applicationContext, ProjectivyComm2Prefs),
-            AmazonMediaProvider(requireNotNull(context).applicationContext, ProjectivyAmazonPrefs),
-            LocalMediaProvider(requireNotNull(context).applicationContext, ProjectivyLocalMediaPrefs),
+            AppleMediaProvider(requireNotNull(context).applicationContext, AppleVideoPrefs),
+            Comm1MediaProvider(requireNotNull(context).applicationContext, Comm1VideoPrefs),
+            Comm2MediaProvider(requireNotNull(context).applicationContext, Comm2VideoPrefs),
+            AmazonMediaProvider(requireNotNull(context).applicationContext, AmazonVideoPrefs),
+            LocalMediaProvider(requireNotNull(context).applicationContext, LocalMediaPrefs),
         )
 
     companion object {
