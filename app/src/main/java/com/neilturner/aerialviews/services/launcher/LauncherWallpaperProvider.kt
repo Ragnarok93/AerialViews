@@ -69,7 +69,7 @@ class LauncherWallpaperProvider : ContentProvider() {
 
         media.forEachIndexed { index, item ->
             cursor.addRow(
-                arrayOf(
+                arrayOf<Any>(
                     index,
                     playbackUri(item.uri),
                     if (item.type == AerialMediaType.VIDEO) TYPE_VIDEO else TYPE_IMAGE,
