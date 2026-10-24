@@ -26,7 +26,7 @@ android {
         targetSdk = 37
         // Increment for every installable release; preserve applicationId and signing identity for upgrades.
         versionCode = 152
-        versionName = "1.8.6"
+        versionName = "1.8.7"
         betaVersion = "-beta2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
